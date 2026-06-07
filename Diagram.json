@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "author": "Greenhouse Control System",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": -76.8, "left": 52.84, "attrs": {} },
+    {
+      "type": "wokwi-lcd1602",
+      "id": "lcd1",
+      "top": -70.4,
+      "left": 188,
+      "attrs": { "pins": "i2c" }
+    },
+    { "type": "wokwi-potentiometer", "id": "pot1", "top": -270.1, "left": 28.6, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht1", "top": -278.1, "left": -139.8, "attrs": {} },
+    { "type": "wokwi-led", "id": "led1", "top": 82.8, "left": 224.6, "attrs": { "color": "red" } },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 157.55,
+      "left": -38.4,
+      "attrs": { "value": "10000" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "lcd1:SDA", "esp:21", "green", [ "v-4.49", "h-28.8", "v23.89" ] ],
+    [ "lcd1:GND", "esp:GND.2", "black", [ "h-16.67", "v162.78" ] ],
+    [ "lcd1:VCC", "esp:3V3", "red", [ "h-9.6", "v-57.5", "h-134.55" ] ],
+    [ "lcd1:SCL", "esp:22", "purple", [ "h-19.2", "v-18.9" ] ],
+    [ "r1:2", "esp:3V3", "green", [ "v0" ] ],
+    [ "r1:1", "esp:15", "green", [ "v28.8", "h220.8", "v-96" ] ],
+    [ "led1:A", "esp:5", "green", [ "v0", "h38.4", "v-48", "h-115.2", "v-38.4", "h-19.2" ] ],
+    [ "led1:C", "esp:GND.3", "green", [ "v19.2", "h-66.8", "v-134.4" ] ],
+    [ "dht1:SDA", "esp:15", "green", [ "v393.6", "h278.5", "v-134.4" ] ],
+    [ "dht1:VCC", "esp:3V3", "red", [ "v0" ] ],
+    [ "dht1:GND", "esp:GND.2", "black", [ "v38.4", "h259.2" ] ],
+    [ "pot1:VCC", "esp:3V3", "red", [ "v96", "h-20" ] ],
+    [ "pot1:GND", "esp:GND.2", "black", [ "v96", "h115.2", "v9.6" ] ],
+    [ "pot1:SIG", "esp:34", "green", [ "v48", "h-29.2", "v144" ] ]
+  ],
+  "dependencies": {}
+}
