@@ -4,6 +4,8 @@
 #include <freertos/semphr.h>
 #include <DHT.h>
 #include <LiquidCrystal_I2C.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
 
 // ==================== PIN DEFINITIONS ====================
 #define SOIL_MOISTURE_PIN   34
@@ -11,12 +13,18 @@
 #define PUMP_PIN            5
 #define DHT_TYPE            DHT22
 
+const char* ssid = "Wokwi-GUEST";
+const char* password = "";
+
+String apiKey = "R58RK9AD6Z8GOYGL";
+
 // ==================== CONSTANTS ====================
 // Timing constants (in milliseconds)
 const TickType_t SOIL_INTERVAL_MS = pdMS_TO_TICKS(500);     // Every 500ms
-const TickType_t DHT_INTERVAL_MS = pdMS_TO_TICKS(2000);     // Every 2 seconds
+const TickType_t DHT_INTERVAL_MS =
+ pdMS_TO_TICKS(2000);     // Every 2 seconds
 const TickType_t LCD_INTERVAL_MS = pdMS_TO_TICKS(500);      // Every 500ms (faster update)
-const TickType_t MQTT_INTERVAL_MS = pdMS_TO_TICKS(10000);   // Every 10 seconds
+const TickType_t MQTT_INTERVAL_MS = pdMS_TO_TICKS(15000);   // Every 15 seconds
 
 // DHT22 read time is 200ms (simulated)
 const int DHT_READ_DURATION_MS = 200;
@@ -246,44 +254,34 @@ void updateLCD() {
 }
 
 void mqttSimulatedSend() {
-  mqttCounter++;
-  
-  printHeader("☁️  CLOUD LOGGING (MQTT) ☁️");
-  printAligned("Transmission #", String(mqttCounter).c_str(), millis());
-  printAligned("Status", "STARTING transmission...", millis());
-  printAligned("Block time", String(MQTT_SEND_DURATION_MS).c_str(), millis());
-  
-  // Get current sensor data
-  float temp, hum, moisture;
-  if (xSemaphoreTake(dhtMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
-    temp = temperature;
-    hum = humidity;
-    xSemaphoreGive(dhtMutex);
+
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("WiFi not connected");
+    return;
   }
-  if (xSemaphoreTake(soilMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
-    moisture = soilMoisture;
-    xSemaphoreGive(soilMutex);
+
+  HTTPClient http;
+
+  String url =
+      "https://api.thingspeak.com/update?api_key=" + apiKey +
+      "&field1=" + String(soilMoisture * 100) +
+      "&field2=" + String(temperature) +
+      "&field3=" + String(humidity) +
+      "&field4=" + String(pumpActive);
+
+  http.begin(url);
+
+  int httpCode = http.GET();
+
+  if (httpCode > 0) {
+    Serial.println("ThingSpeak Updated Successfully");
+  } else {
+    Serial.println("Upload Failed");
   }
-  
-  // Simulate the 1.5 second blocking MQTT send operation
-  unsigned long startBlock = millis();
-  vTaskDelay(pdMS_TO_TICKS(MQTT_SEND_DURATION_MS));
-  unsigned long endBlock = millis();
-  
-  printAligned("Status", "TRANSMITTING data...", startBlock);
-  
-  // Print the data being sent
-  printSubHeader("📤 DATA SENT TO CLOUD");
-  printMetric("Soil Moisture", (int)(moisture * 100), "%", endBlock);
-  printMetricFloat("Temperature", temp, "°C", endBlock);
-  printMetricFloat("Humidity", hum, "%", endBlock);
-  
-  printSubHeader("📊 TRANSMISSION STATS");
-  printAligned("Actual block time", String(endBlock - startBlock).c_str(), endBlock);
-  printAligned("Status", "COMPLETED successfully", endBlock);
-  
-  printSeparator('=', 65);
+
+  http.end();
 }
+
 
 // ==================== FREERTOS TASKS ====================
 
@@ -447,8 +445,20 @@ void printTaskStats() {
 // ==================== SETUP ====================
 
 void setup() {
+
   Serial.begin(115200);
   delay(1000);
+
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.println("WiFi Connected");
+
   
   printDoubleSeparator();
   printHeader("🏭 GREENHOUSE CONTROL SYSTEM 🏭");
