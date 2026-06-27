@@ -20,7 +20,8 @@
       "top": 157.55,
       "left": -38.4,
       "attrs": { "value": "10000" }
-    }
+    },
+    { "type": "wokwi-logic-analyzer", "id": "logic1", "top": -326.05, "left": 211.2, "attrs": {} }
   ],
   "connections": [
     [ "esp:TX", "$serialMonitor:RX", "", [] ],
@@ -38,7 +39,11 @@
     [ "dht1:GND", "esp:GND.2", "black", [ "v38.4", "h259.2" ] ],
     [ "pot1:VCC", "esp:3V3", "red", [ "v96", "h-20" ] ],
     [ "pot1:GND", "esp:GND.2", "black", [ "v96", "h115.2", "v9.6" ] ],
-    [ "pot1:SIG", "esp:34", "green", [ "v48", "h-29.2", "v144" ] ]
+    [ "pot1:SIG", "esp:34", "green", [ "v48", "h-29.2", "v144" ] ],
+    [ "logic1:GND", "esp:GND.2", "black", [ "h0" ] ],
+    [ "logic1:D0", "esp:5", "green", [ "h0" ] ],
+    [ "logic1:D1", "esp:34", "green", [ "h-38.4", "v144", "h-115.35" ] ],
+    [ "logic1:D2", "esp:15", "green", [ "h0" ] ]
   ],
   "dependencies": {}
 }
